@@ -1,5 +1,6 @@
 package org.example.javafx_filmoteca;
 
+import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -11,6 +12,9 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class MainController {
 
@@ -41,6 +45,8 @@ public class MainController {
     private Label genreLabel;
     @FXML
     private ImageView posterImageView;
+    @FXML
+    private TextField searchField;
 
     @FXML
     private void initialize() {
@@ -60,14 +66,14 @@ public class MainController {
 
     @FXML
     private void handleAdd() {
-        mostrarVentanaEdicion(null);
+        mostrarVentanaEdicion(null, true);
     }
 
     @FXML
     private void handleEdit() {
         Pelicula selectedPelicula = peliculasTable.getSelectionModel().getSelectedItem();
         if (selectedPelicula != null) {
-            mostrarVentanaEdicion(selectedPelicula);
+            mostrarVentanaEdicion(selectedPelicula, false);
         } else {
             mostrarAlerta("No se ha seleccionado ninguna película", "Por favor, selecciona una película de la tabla.");
         }
@@ -83,7 +89,14 @@ public class MainController {
             alert.setContentText("¿Estás seguro de que deseas borrar la película seleccionada?");
             alert.showAndWait().ifPresent(response -> {
                 if (response == ButtonType.OK) {
+                    // Eliminamos la película de la lista
                     DatosFilmoteca.getInstance().getPeliculas().remove(selectedPelicula);
+
+                    // Guardamos el cambio en el archivo JSON
+                    DatosFilmoteca.getInstance().saveToJson();
+
+                    // También se puede hacer alguna acción extra si es necesario, como actualizar la vista
+                    peliculasTable.refresh();
                 }
             });
         } else {
@@ -112,38 +125,56 @@ public class MainController {
         alert.showAndWait();
     }
 
-    private void mostrarVentanaEdicion(Pelicula pelicula) {
+    private void mostrarVentanaEdicion(Pelicula pelicula, boolean isAdd) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("AddEditPeliculaView.fxml"));
             Parent page = loader.load();
 
             Stage dialogStage = new Stage();
-            dialogStage.setTitle(pelicula == null ? "Añadir Película" : "Editar Película");
+            dialogStage.setTitle(isAdd ? "Añadir Película" : "Editar Película");
             dialogStage.initModality(Modality.WINDOW_MODAL);
             dialogStage.initOwner(peliculasTable.getScene().getWindow());
+
             Scene scene = new Scene(page);
+            // Cargar la hoja de estilos
+            scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("css/styles.css")).toExternalForm());
+
             dialogStage.setScene(scene);
 
             AddEditController controller = loader.getController();
             controller.setDialogStage(dialogStage);
-            controller.setPelicula(pelicula);
+            controller.setPelicula(pelicula, isAdd);
 
             dialogStage.showAndWait();
+
+            // Si se editó, actualizar los detalles
+            peliculasTable.refresh();
+            mostrarDetallesPelicula(pelicula);
         } catch (IOException e) {
-            e.printStackTrace();
+            mostrarAlerta("Error", "No se pudo abrir la ventana de edición.");
         }
     }
 
-    private void mostrarDetallesPelicula(Pelicula pelicula) {
+
+    void mostrarDetallesPelicula(Pelicula pelicula) {
         if (pelicula != null) {
             titleLabel.setText(pelicula.getTitle());
             yearLabel.setText(Integer.toString(pelicula.getYear()));
             descriptionLabel.setText(pelicula.getDescription());
             directorLabel.setText(pelicula.getDirector());
-            // Formatear el rating a 1 decimal
             ratingLabel.setText(String.format("%.1f", pelicula.getRating()));
             genreLabel.setText(String.join(", ", pelicula.getGenre()));
-            posterImageView.setImage(new Image(pelicula.getPoster()));
+
+            // Manejo seguro de la imagen
+            try {
+                if (pelicula.getPoster() != null && !pelicula.getPoster().isBlank()) {
+                    posterImageView.setImage(new Image(pelicula.getPoster(), true));
+                } else {
+                    posterImageView.setImage(null);
+                }
+            } catch (Exception e) {
+                posterImageView.setImage(null);
+            }
         } else {
             titleLabel.setText("");
             yearLabel.setText("");
@@ -154,4 +185,23 @@ public class MainController {
             posterImageView.setImage(null);
         }
     }
+
+    // Método de búsqueda
+    @FXML
+    private void handleSearch() {
+        String searchText = searchField.getText().toLowerCase().trim();
+
+        if (searchText.isEmpty()) {
+            // Si no hay texto en la búsqueda, mostrar todas las películas
+            peliculasTable.setItems(DatosFilmoteca.getInstance().getPeliculas());
+        } else {
+            // Filtrar las películas que contienen el texto de búsqueda en su título
+            List<Pelicula> filteredPeliculas = DatosFilmoteca.getInstance().getPeliculas().stream()
+                    .filter(p -> p.getTitle().toLowerCase().contains(searchText))
+                    .collect(Collectors.toList());
+
+            peliculasTable.setItems(FXCollections.observableList(filteredPeliculas));
+        }
+    }
+
 }

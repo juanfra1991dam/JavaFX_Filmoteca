@@ -4,7 +4,10 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 
+import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class AddEditController {
 
@@ -30,19 +33,23 @@ public class AddEditController {
 
     @FXML
     private void initialize() {
-        // Agregar el ChangeListener al slider
-        ratingSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
-            // Redondear el valor a 1 decimal
-            double value = Math.round(newValue.doubleValue() * 10.0) / 10.0;
-            // Mostrar el valor con 1 decimal
-            ratingLabel.setText(String.format("%.1f", value));
-        });
 
-        // Solo permitir números en el campo YEAR
+        // Restringe el campo YEAR a solo números, no más de 4 dígitos
         yearField.textProperty().addListener((observable, oldValue, newValue) -> {
             if (!newValue.matches("\\d*")) {
-                yearField.setText(oldValue);  // Restaurar el valor anterior si no es un número
+                yearField.setText(oldValue);
+            } else {
+                // Limitar a 4 dígitos
+                if (newValue.length() > 4) {
+                    yearField.setText(oldValue);
+                }
             }
+        });
+
+        // Sincroniza slider con label (1 decimal)
+        ratingSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
+            double value = Math.round(newValue.doubleValue() * 10.0) / 10.0;
+            ratingLabel.setText(String.format("%.1f", value));
         });
     }
 
@@ -50,45 +57,111 @@ public class AddEditController {
         this.dialogStage = dialogStage;
     }
 
-    public void setPelicula(Pelicula pelicula) {
-        this.pelicula = pelicula;
-        if (pelicula != null) {
-            titleField.setText(pelicula.getTitle());
-            yearField.setText(Integer.toString(pelicula.getYear()));
-            descriptionArea.setText(pelicula.getDescription());
-            // Redondear el valor de rating antes de asignarlo al slider
-            ratingSlider.setValue(Math.round(pelicula.getRating() * 10.0) / 10.0);
-            // Mostrar el valor redondeado en el label
-            ratingLabel.setText(String.format("%.1f", pelicula.getRating()));
-            genreField.setText(String.join(", ", pelicula.getGenre()));
-            posterField.setText(pelicula.getPoster());
-            directorField.setText(pelicula.getDirector());
+    public void setPelicula(Pelicula pelicula, boolean isAdd) {
+        if (pelicula == null) {
+            this.pelicula = new Pelicula();
+        } else {
+            this.pelicula = pelicula;
         }
+
+        titleField.setText(this.pelicula.getTitle());
+
+        // Establecer el año actual por defecto en el campo yearField
+        int currentYear = LocalDate.now().getYear();
+
+        yearField.setText(isAdd ? Integer.toString(currentYear) : Integer.toString(this.pelicula.getYear()));
+        descriptionArea.setText(this.pelicula.getDescription());
+
+        // Sincroniza slider con label
+        double rating = Math.round(this.pelicula.getRating() * 10.0) / 10.0;
+        ratingSlider.setValue(rating);
+        ratingLabel.setText(String.format("%.1f", rating));
+
+        genreField.setText(String.join(", ", this.pelicula.getGenre()));
+        posterField.setText(this.pelicula.getPoster());
+        directorField.setText(this.pelicula.getDirector());
     }
 
     @FXML
     private void handleSave() {
-        if (pelicula == null) {
-            pelicula = new Pelicula();
-        }
-        pelicula.setTitle(titleField.getText());
-        pelicula.setYear(Integer.parseInt(yearField.getText()));
-        pelicula.setDescription(descriptionArea.getText());
-        // Redondear el rating a un decimal antes de guardarlo
-        pelicula.setRating(Math.round(ratingSlider.getValue() * 10.0) / 10.0);
-        pelicula.setGenre(List.of(genreField.getText().split(",")));
-        pelicula.setPoster(posterField.getText());
-        pelicula.setDirector(directorField.getText());
-
-        if (!DatosFilmoteca.getInstance().getPeliculas().contains(pelicula)) {
-            DatosFilmoteca.getInstance().getPeliculas().add(pelicula);
+        // Validar campos obligatorios
+        if (isAnyRequiredFieldEmpty()) {
+            showAlert("Los campos 'Título', 'Año', 'Director' y 'Género' son obligatorios.");
+            return;
         }
 
+        try {
+            pelicula.setYear(Integer.parseInt(yearField.getText()));
+        } catch (NumberFormatException e) {
+            showAlert("El año debe ser un número válido.");
+            return;
+        }
+
+        pelicula.setTitle(titleField.getText().trim());
+        pelicula.setDescription(descriptionArea.getText() != null ? descriptionArea.getText().trim() : "");
+
+        double rating = Math.round(ratingSlider.getValue() * 10.0) / 10.0;
+        pelicula.setRating(rating);
+
+        List<String> genres = Arrays.stream(genreField.getText().split(","))
+                .map(String::trim)
+                .filter(g -> !g.isEmpty())
+                .collect(Collectors.toList());
+
+        pelicula.setGenre(genres);
+        pelicula.setPoster(posterField.getText() != null ? posterField.getText().trim() : "");
+        pelicula.setDirector(directorField.getText().trim());
+
+        // Solo asignar ID si es una nueva película
+        if (pelicula.getId() == 0) {
+            int maxId = DatosFilmoteca.getInstance().getPeliculas().stream()
+                    .mapToInt(Pelicula::getId)
+                    .max()
+                    .orElse(0);
+            pelicula.setId(maxId + 1);
+        }
+
+        List<Pelicula> peliculas = DatosFilmoteca.getInstance().getPeliculas();
+
+        // Si ya existe, la reemplaza
+        for (int i = 0; i < peliculas.size(); i++) {
+            if (peliculas.get(i).getId() == pelicula.getId()) {
+                peliculas.set(i, pelicula);
+                DatosFilmoteca.getInstance().saveToJson();
+                dialogStage.close();
+                return;
+            }
+        }
+
+        // Si es nueva, la agrega
+        peliculas.add(pelicula);
+        DatosFilmoteca.getInstance().saveToJson();
         dialogStage.close();
     }
 
     @FXML
     private void handleCancel() {
         dialogStage.close();
+    }
+
+    private void showAlert(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Error");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    // Metodo para validar campos obligatorios
+    private boolean isAnyRequiredFieldEmpty() {
+        return isNullOrEmpty(titleField.getText()) ||
+                isNullOrEmpty(yearField.getText()) ||
+                isNullOrEmpty(directorField.getText()) ||
+                isNullOrEmpty(genreField.getText());
+    }
+
+    // Metodo para verificar si el texto es null o vacío
+    private boolean isNullOrEmpty(String text) {
+        return text == null || text.trim().isEmpty();
     }
 }

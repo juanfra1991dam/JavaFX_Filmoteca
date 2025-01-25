@@ -1,34 +1,29 @@
 package org.example.javafx_filmoteca;
 
-import javafx.beans.property.ListProperty;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
-import java.io.FileReader;
-import java.io.FileWriter;
+
+import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.util.List;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.StringProperty;
 
 public class DatosFilmoteca {
-    private static DatosFilmoteca instance;
-    private ObservableList<Pelicula> peliculas;
+    private static final String ARCHIVO_JSON = "datos/peliculas.json";
+    private static final DatosFilmoteca instance = new DatosFilmoteca();
+    private final ObservableList<Pelicula> peliculas;
+    private final ObjectMapper objectMapper;
 
     private DatosFilmoteca() {
         peliculas = FXCollections.observableArrayList();
+        objectMapper = new ObjectMapper();
     }
 
     public static DatosFilmoteca getInstance() {
-        if (instance == null) {
-            instance = new DatosFilmoteca();
-        }
         return instance;
     }
 
@@ -37,44 +32,30 @@ public class DatosFilmoteca {
     }
 
     public void cargarDatos() {
-        try (FileReader reader = new FileReader("datos/peliculas.json")) {
-            // Crear el objeto Gson con los adaptadores registrados
-            Gson gson = new GsonBuilder()
-                    .registerTypeAdapter(IntegerProperty.class, new TypeAdapters.IntegerPropertyAdapter())
-                    .registerTypeAdapter(StringProperty.class, new TypeAdapters.StringPropertyAdapter())
-                    .registerTypeAdapter(DoubleProperty.class, new TypeAdapters.DoublePropertyAdapter())
-                    .registerTypeAdapter(ListProperty.class, new TypeAdapters.ListPropertyAdapter())
-                    .create();
+        try {
+            File archivo = new File(ARCHIVO_JSON);
+            if (!archivo.exists()) {
+                return;
+            }
 
-            // Deserializar los datos del archivo JSON
-            Type listType = new TypeToken<List<Pelicula>>() {}.getType();
-            List<Pelicula> lista = gson.fromJson(reader, listType);
-
-            // Agregar las películas deserializadas a la lista observable
-            peliculas.addAll(lista);
+            List<Pelicula> lista = objectMapper.readValue(archivo, new TypeReference<>() {
+            });
+            peliculas.setAll(lista);
         } catch (IOException e) {
-            mostrarAlerta("Error al cargar datos", e.getMessage());
+            mostrarAlerta("Error al cargar datos", "No se pudo leer el archivo de datos.\n" + e.getMessage());
         }
     }
 
-
-    public void guardarDatos() {
-        try (FileWriter writer = new FileWriter("datos/peliculas.json")) {
-            // Crear el objeto Gson con los adaptadores registrados
-            Gson gson = new GsonBuilder()
-                    .registerTypeAdapter(IntegerProperty.class, new TypeAdapters.IntegerPropertyAdapter())
-                    .registerTypeAdapter(StringProperty.class, new TypeAdapters.StringPropertyAdapter())
-                    .registerTypeAdapter(DoubleProperty.class, new TypeAdapters.DoublePropertyAdapter())
-                    .registerTypeAdapter(ListProperty.class, new TypeAdapters.ListPropertyAdapter())
-                    .create();
-
-            // Serializar las películas a formato JSON y escribirlas en el archivo
-            gson.toJson(peliculas, writer);
+    public void saveToJson() {
+        // Formateamos el json
+        objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+        try {
+            // Guardamos el cambio en el archivo JSON
+            objectMapper.writeValue(new File(ARCHIVO_JSON), peliculas);
         } catch (IOException e) {
-            mostrarAlerta("Error al guardar datos", e.getMessage());
+            mostrarAlerta("Error al guardar datos", "No se pudo escribir en el archivo de datos.\n" + e.getMessage());
         }
     }
-
 
     private void mostrarAlerta(String titulo, String contenido) {
         Alert alert = new Alert(AlertType.ERROR);

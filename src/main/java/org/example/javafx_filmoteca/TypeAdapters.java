@@ -1,70 +1,110 @@
 package org.example.javafx_filmoteca;
 
-import com.google.gson.*;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.ListProperty;
-import javafx.beans.property.SimpleListProperty;
-import javafx.beans.property.StringProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.property.SimpleStringProperty;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 
-import java.lang.reflect.Type;
+import java.io.IOException;
 import java.util.List;
 
+/**
+ * Adaptadores personalizados para serializar y deserializar propiedades de JavaFX con Jackson.
+ */
 public class TypeAdapters {
 
-    // Adaptador para IntegerProperty
-    public static class IntegerPropertyAdapter implements JsonSerializer<IntegerProperty>, JsonDeserializer<IntegerProperty> {
-        @Override
-        public JsonElement serialize(IntegerProperty src, Type typeOfSrc, JsonSerializationContext context) {
-            return new JsonPrimitive(src.get());
+    // 🔹 Adaptador para IntegerProperty
+    public static class IntegerPropertySerializer extends StdSerializer<IntegerProperty> {
+        public IntegerPropertySerializer() {
+            super(IntegerProperty.class);
         }
 
         @Override
-        public IntegerProperty deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-            return new SimpleIntegerProperty(json.getAsInt());
-        }
-    }
-
-    // Adaptador para StringProperty
-    public static class StringPropertyAdapter implements JsonSerializer<StringProperty>, JsonDeserializer<StringProperty> {
-        @Override
-        public JsonElement serialize(StringProperty src, Type typeOfSrc, JsonSerializationContext context) {
-            return new JsonPrimitive(src.get());
-        }
-
-        @Override
-        public StringProperty deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-            return new SimpleStringProperty(json.getAsString());
+        public void serialize(IntegerProperty value, JsonGenerator gen, SerializerProvider provider) throws IOException {
+            gen.writeNumber(value.get());
         }
     }
 
-    // Adaptador para DoubleProperty
-    public static class DoublePropertyAdapter implements JsonSerializer<DoubleProperty>, JsonDeserializer<DoubleProperty> {
-        @Override
-        public JsonElement serialize(DoubleProperty src, Type typeOfSrc, JsonSerializationContext context) {
-            return new JsonPrimitive(src.get());
+    public static class IntegerPropertyDeserializer extends StdDeserializer<IntegerProperty> {
+        public IntegerPropertyDeserializer() {
+            super(IntegerProperty.class);
         }
 
         @Override
-        public DoubleProperty deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-            return new SimpleDoubleProperty(json.getAsDouble());
+        public IntegerProperty deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+            return new SimpleIntegerProperty(p.getIntValue());
         }
     }
 
-    // Adaptador para ListProperty
-    public static class ListPropertyAdapter implements JsonSerializer<ListProperty<String>>, JsonDeserializer<ListProperty<String>> {
-        @Override
-        public JsonElement serialize(ListProperty<String> src, Type typeOfSrc, JsonSerializationContext context) {
-            return context.serialize(src.get());
+    // 🔹 Adaptador para StringProperty
+    public static class StringPropertySerializer extends StdSerializer<StringProperty> {
+        public StringPropertySerializer() {
+            super(StringProperty.class);
         }
 
         @Override
-        public ListProperty<String> deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-            List<String> list = context.deserialize(json, List.class);
+        public void serialize(StringProperty value, JsonGenerator gen, SerializerProvider provider) throws IOException {
+            gen.writeString(value.get());
+        }
+    }
+
+    public static class StringPropertyDeserializer extends StdDeserializer<StringProperty> {
+        public StringPropertyDeserializer() {
+            super(StringProperty.class);
+        }
+
+        @Override
+        public StringProperty deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+            return new SimpleStringProperty(p.getText());
+        }
+    }
+
+    // 🔹 Adaptador para DoubleProperty
+    public static class DoublePropertySerializer extends StdSerializer<DoubleProperty> {
+        public DoublePropertySerializer() {
+            super(DoubleProperty.class);
+        }
+
+        @Override
+        public void serialize(DoubleProperty value, JsonGenerator gen, SerializerProvider provider) throws IOException {
+            gen.writeNumber(value.get());
+        }
+    }
+
+    public static class DoublePropertyDeserializer extends StdDeserializer<DoubleProperty> {
+        public DoublePropertyDeserializer() {
+            super(DoubleProperty.class);
+        }
+
+        @Override
+        public DoubleProperty deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+            return new SimpleDoubleProperty(p.getDoubleValue());
+        }
+    }
+
+    // 🔹 Adaptador para ListProperty<String>
+    public static class ListPropertySerializer extends StdSerializer<ListProperty<String>> {
+        public ListPropertySerializer() {
+            super((Class<ListProperty<String>>) (Class<?>) ListProperty.class);
+        }
+
+        @Override
+        public void serialize(ListProperty<String> value, JsonGenerator gen, SerializerProvider provider) throws IOException {
+            gen.writeObject(value.get());
+        }
+    }
+
+    public static class ListPropertyDeserializer extends StdDeserializer<ListProperty<String>> {
+        public ListPropertyDeserializer() {
+            super((Class<?>) ListProperty.class);
+        }
+
+        @Override
+        public ListProperty<String> deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+            List list = p.readValueAs(List.class);
             return new SimpleListProperty<>(FXCollections.observableArrayList(list));
         }
     }
