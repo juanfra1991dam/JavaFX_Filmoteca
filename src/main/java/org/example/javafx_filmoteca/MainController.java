@@ -186,7 +186,7 @@ public class MainController {
         }
     }
 
-    // Método de búsqueda
+    // Metodo de búsqueda
     @FXML
     private void handleSearch() {
         String searchText = searchField.getText().toLowerCase().trim();
