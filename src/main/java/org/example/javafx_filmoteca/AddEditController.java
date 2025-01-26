@@ -27,7 +27,6 @@ public class AddEditController {
     private TextField posterField;
     @FXML
     private TextField directorField;
-
     private Stage dialogStage;
     private Pelicula pelicula;
 

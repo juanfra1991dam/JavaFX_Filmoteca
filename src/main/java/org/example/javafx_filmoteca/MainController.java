@@ -118,13 +118,6 @@ public class MainController {
         });
     }
 
-    private void mostrarAlerta(String titulo, String contenido) {
-        Alert alert = new Alert(Alert.AlertType.WARNING);
-        alert.setTitle(titulo);
-        alert.setContentText(contenido);
-        alert.showAndWait();
-    }
-
     private void mostrarVentanaEdicion(Pelicula pelicula, boolean isAdd) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("AddEditPeliculaView.fxml"));
@@ -136,7 +129,7 @@ public class MainController {
             dialogStage.initOwner(peliculasTable.getScene().getWindow());
 
             Scene scene = new Scene(page);
-            // Cargar la hoja de estilos
+            // Carga la hoja de estilos
             scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("css/styles.css")).toExternalForm());
 
             dialogStage.setScene(scene);
@@ -154,7 +147,6 @@ public class MainController {
             mostrarAlerta("Error", "No se pudo abrir la ventana de edición.");
         }
     }
-
 
     void mostrarDetallesPelicula(Pelicula pelicula) {
         if (pelicula != null) {
@@ -186,6 +178,13 @@ public class MainController {
         }
     }
 
+    private void mostrarAlerta(String titulo, String contenido) {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle(titulo);
+        alert.setContentText(contenido);
+        alert.showAndWait();
+    }
+
     // Metodo de búsqueda
     @FXML
     private void handleSearch() {
@@ -203,5 +202,4 @@ public class MainController {
             peliculasTable.setItems(FXCollections.observableList(filteredPeliculas));
         }
     }
-
 }

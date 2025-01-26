@@ -16,7 +16,7 @@ public class FilmotecaApp extends Application {
 
         Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("MainView.fxml")));
         Scene scene = new Scene(root);
-        primaryStage.setTitle("Filmoteca");
+        primaryStage.setTitle("FilmotecApp");
         primaryStage.setScene(scene);
         primaryStage.show();
     }

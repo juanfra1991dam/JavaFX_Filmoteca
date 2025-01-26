@@ -1,23 +1,71 @@
-/* General styling */
+/* Estilo general */
 * {
     -fx-font-family: Arial, sans-serif;
 }
 
-/* Table styling */
+/* Estilo general para la tabla */
 .table-view {
-    -fx-background-color: #f0f0f0;
+    -fx-background-color: #f5f5f5;
     -fx-border-color: #ccc;
-    -fx-border-width: 1px;
-    -fx-padding: 10px;
+    -fx-border-radius: 8px;
+    -fx-padding: 5px;
+    -fx-background-radius: 8px;
 }
 
-.table-column-header {
-    -fx-background-color: #d3d3d3;
+/* Fondo de la cabecera de la tabla */
+.table-view .column-header-background {
+    -fx-background-color: linear-gradient(to bottom, #007acc, #005a9e); /* Azul degradado */
+    -fx-border-radius: 8px 8px 0 0;
+}
+
+/* Estilo de las celdas de la cabecera */
+.table-view .column-header {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-alignment: CENTER;
+}
+
+/* Texto de las cabeceras */
+.table-view .column-header, .table-view .label {
+    -fx-text-fill: white;
+    -fx-alignment: CENTER;
+}
+
+/* Celdas de la tabla */
+.table-row-cell {
+    -fx-background-color: white;
+    -fx-text-fill: black;
+}
+
+/* Alternancia de colores en filas */
+.table-row-cell:odd {
+    -fx-background-color: #f0f0f0;
+}
+
+.table-row-cell:even {
+    -fx-background-color: white;
+}
+
+/* Estilo para la fila seleccionada */
+.table-row-cell:selected {
+    -fx-background-color: #ffd700; /* Amarillo dorado */
     -fx-font-weight: bold;
 }
 
-.table-row-cell:filled:selected {
-    -fx-background-color: #87CEEB;
+/* Texto de las celdas dentro de la fila seleccionada */
+.table-row-cell:selected .text {
+    -fx-fill: black;
+}
+
+/* Hover sobre filas */
+.table-row-cell:hover {
+    -fx-background-color: #ffd700; /* Amarillo dorado */
+    -fx-font-weight: bold;
+}
+
+/* Borde de la tabla cuando se selecciona */
+.table-view:focused {
+    -fx-border-color: #4CAF50;
 }
 
 /* Button styling */
@@ -57,7 +105,7 @@
     -fx-background-color: #F44336; /* Red */
 }
 
-.button-delete:hover, .button-close:hover, .button-cancel {
+.button-delete:hover, .button-close:hover, .button-cancel:hover {
     -fx-background-color: #d32f2f; /* Darker red when hovered */
 }
 

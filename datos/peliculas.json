@@ -99,12 +99,12 @@
   "poster" : "https://estaticos-cdn.prensaiberica.es/clip/d3e67ddc-8d14-4df0-8797-d8137d025e71_alta-libre-aspect-ratio_default_0.jpg"
 }, {
   "id" : 12,
-  "title" : "Prueba modif",
+  "title" : "Prueba modificada",
   "year" : 2025,
   "genre" : [ "Action", "Reaccion" ],
   "description" : "Descricpcion de prueba",
   "director" : "Director",
-  "rating" : 5.0,
+  "rating" : 6.1,
   "poster" : "https://motorcyclesports.net/wp-content/uploads/2024/11/Marc-Marquez-4.jpg"
 }, {
   "id" : 13,
@@ -117,11 +117,11 @@
   "poster" : "https://motorcyclesports.net/wp-content/uploads/2024/11/Marc-Marquez-4.jpg"
 }, {
   "id" : 14,
-  "title" : "AA",
-  "year" : 2025,
-  "genre" : [ "AA" ],
-  "description" : "Texto de prueba",
-  "director" : "AA",
-  "rating" : 0.0,
-  "poster" : "https://motorcyclesports.net/wp-content/uploads/2024/11/Marc-Marquez-4.jpg"
+  "title" : "Jhon Wick 3",
+  "year" : 2018,
+  "genre" : [ "Acción", "Aventura", "Suspenso", "Neo-noir" ],
+  "description" : "John Wick regresa de nuevo pero con una recompensa sobre su cabeza que persigue unos mercenarios.",
+  "director" : "Chad Stahelski",
+  "rating" : 8.5,
+  "poster" : "https://d1csarkz8obe9u.cloudfront.net/posterpreviews/movie-poster-template-ebfefbf4ede371be0f6f9148ccd4d393_screen.jpg?ts=1698538444"
 } ]
