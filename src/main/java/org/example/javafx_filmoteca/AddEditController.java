@@ -57,15 +57,12 @@ public class AddEditController {
     }
 
     public void setPelicula(Pelicula pelicula, boolean isAdd) {
-        if (pelicula == null) {
-            this.pelicula = new Pelicula();
-        } else {
-            this.pelicula = pelicula;
-        }
+
+        this.pelicula = (pelicula != null) ? pelicula : new Pelicula();
 
         titleField.setText(this.pelicula.getTitle());
 
-        // Establecer el año actual por defecto en el campo yearField
+        // Establece el año actual por defecto en el campo yearField
         int currentYear = LocalDate.now().getYear();
 
         yearField.setText(isAdd ? Integer.toString(currentYear) : Integer.toString(this.pelicula.getYear()));
