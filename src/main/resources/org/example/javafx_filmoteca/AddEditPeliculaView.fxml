@@ -12,24 +12,23 @@
 <AnchorPane prefHeight="600.0" prefWidth="500.0" xmlns="http://javafx.com/javafx/21.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.javafx_filmoteca.AddEditController">
     <VBox layoutX="15.0" layoutY="10.0" prefWidth="470.0" spacing="12">
         <Label styleClass="label-header" text="Detalles de la Película" />
-        <Label text="Título:" styleClass="label-subHeader" />
+        <Label text="Título *" styleClass="label-subHeader" />
         <TextField fx:id="titleField" />
-        <Label text="Año:" styleClass="label-subHeader" />
+        <Label text="Año *" styleClass="label-subHeader" />
         <TextField fx:id="yearField"/>
-        <Label text="Descripción:" styleClass="label-subHeader" />
+        <Label text="Descripción" styleClass="label-subHeader" />
         <TextArea fx:id="descriptionArea" prefHeight="80.0" wrapText="true" />
-        <Label text="Director:" styleClass="label-subHeader" />
+        <Label text="Director *" styleClass="label-subHeader" />
         <TextField fx:id="directorField" />
-        <Label text="Rating:" styleClass="label-subHeader" />
+        <Label text="Rating" styleClass="label-subHeader" />
         <HBox spacing="10">
             <Slider fx:id="ratingSlider" blockIncrement="1" max="10" />
             <Label fx:id="ratingLabel" text="0" />
         </HBox>
-        <Label text="Géneros:" styleClass="label-subHeader" />
+        <Label text="Género *" styleClass="label-subHeader" />
         <TextField fx:id="genreField" />
-        <Label text="Poster URL:" styleClass="label-subHeader" />
+        <Label text="Poster URL" styleClass="label-subHeader" />
         <TextField fx:id="posterField" />
-
         <HBox alignment="CENTER_RIGHT" prefHeight="18.0" prefWidth="470.0" spacing="15">
             <Button onAction="#handleSave" styleClass="button-save" text="Guardar" />
             <Button onAction="#handleCancel" styleClass="button-cancel" text="Cancelar" />
